@@ -1,4 +1,3 @@
-
 import os
 import random
 from dotenv import load_dotenv
@@ -12,16 +11,12 @@ from telegram.ext import (
     filters,
 )
 
-# ================== ENV SETUP ==================
 load_dotenv()
+
 TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
-PHOTO_STATE = 18
+PHOTO_STATE = 18  # последний вопрос с фото
 
-if not TOKEN:
-    raise ValueError("❌ BOT_TOKEN не найден. Проверь .env файл.")
-
-# ================== QUESTIONS ==================
 questions = [
     "Ismi Familiyasi:",
     "Tug‘ilgan yili:",
@@ -45,9 +40,8 @@ questions = [
 ]
 
 variant_keyboards = {
-    3: ReplyKeyboardMarkup([["Registratura xodimi", "Hamshira ( kunduzgi va navbatchilikka)"],
-                            ["Call center operator"],
-                            ["Farrosh"]], resize_keyboard=True),
+    3: ReplyKeyboardMarkup([["Registratura xodimi", "Hamshira (kunduzgi va navbatchilikka)"],
+                            ["Call center operator"], ["Farrosh"]], resize_keyboard=True),
     5: ReplyKeyboardMarkup([["O'zbek", "Rus"], ["Boshqa millat"]], resize_keyboard=True),
     6: ReplyKeyboardMarkup([["Oliy", "O‘rta"], ["Texnikum", "O‘qiyapman"]], resize_keyboard=True),
     7: ReplyKeyboardMarkup([["Turmush qurgan", "Turmush qurmagan"]], resize_keyboard=True),
@@ -55,17 +49,16 @@ variant_keyboards = {
     15: ReplyKeyboardMarkup([["Ha", "Yo‘q"]], resize_keyboard=True),
 }
 
-# ================== HANDLERS ==================
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Начало анкеты или повторный /start перезапускает анкету"""
-    context.user_data.clear()  # очищаем предыдущие данные
+    context.user_data.clear()
     context.user_data["step"] = 0
     await update.message.reply_text(
-        "Assalomu alaykum! Ro‘yxatdan o‘tish uchun kerakli ma’lumotlarni yuboring.",
-        reply_markup=ReplyKeyboardRemove()
+        "Assalomu alaykum! Ro‘yxatdan o‘tish uchun kerakli ma’lumotlarni yuboring."
     )
     await ask_question(update, context)
     return 1
+
 
 async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     step = context.user_data["step"]
@@ -77,11 +70,8 @@ async def ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(questions[step], reply_markup=ReplyKeyboardRemove())
 
-async def handle_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        await update.message.reply_text("Iltimos, faqat matn yuboring.")
-        return 1
 
+async def handle_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
     step = context.user_data["step"]
     context.user_data[f"answer_{step}"] = update.message.text
     context.user_data["step"] += 1
@@ -95,6 +85,7 @@ async def handle_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await ask_question(update, context)
         return 1
 
+
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message.photo:
         await update.message.reply_text("Iltimos, faqat rasm yuboring.")
@@ -102,6 +93,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data["photo"] = update.message.photo[-1].file_id
     return await finish(update, context)
+
 
 async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = context.user_data
@@ -111,7 +103,7 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = (
         f"{anketa_id} ✅ Yangi ariza:\n\n"
-        + "\n".join([f"{questions[i]} {data.get(f'answer_{i}', '-')}" for i in range(PHOTO_STATE)])
+        + "\n".join([f"{questions[i]} {data.get(f'answer_{i}', '---')}" for i in range(PHOTO_STATE)])
         + f"\nUsername: {username}\nRasm: {'✅ ilova qilingan' if photo_id else 'yo‘q'}"
     )
 
@@ -119,16 +111,17 @@ async def finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if photo_id:
         await context.bot.send_photo(chat_id=ADMIN_ID, photo=photo_id)
 
-    await update.message.reply_text("✅ Arizangiz yuborildi. Rahmat!", reply_markup=ReplyKeyboardRemove())
-    context.user_data.clear()  # очищаем данные после завершения
+    await update.message.reply_text(
+        "✅ Arizangiz yuborildi. Rahmat!", reply_markup=ReplyKeyboardRemove()
+    )
     return ConversationHandler.END
+
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Bekor qilindi.", reply_markup=ReplyKeyboardRemove())
-    context.user_data.clear()
     return ConversationHandler.END
 
-# ================== MAIN ==================
+
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
 
@@ -136,11 +129,16 @@ if __name__ == "__main__":
         entry_points=[CommandHandler("start", start)],
         states={
             1: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_response)],
-            PHOTO_STATE: [MessageHandler(filters.PHOTO, handle_photo)]
+            PHOTO_STATE: [MessageHandler(filters.PHOTO, handle_photo)],
         },
-        fallbacks=[CommandHandler("cancel", cancel), CommandHandler("start", start)]
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
     app.add_handler(conv_handler)
+
     print("🤖 Bot ishlayapti...")
     app.run_polling()
+
+
+
+
