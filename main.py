@@ -19,10 +19,10 @@ PHOTO_STATE = 18  # последний вопрос с фото
 
 questions = [
     "Ismi Familiyasi:",
-    "Tug‘ilgan yili:",
-    "Telefon (+998):",
+    "Tug‘ilgan yili (masalan:2005):",
+    "Telefon (+998901234567):",
     "Sohangizni tanlang:",
-    "To‘liq manzili:",
+    "To‘liq manzili (masalan Andijon shahar shifokor mfy 20-uy):",
     "Millati:",
     "Ma'lumoti:",
     "Oilaviy holati:",
@@ -34,20 +34,25 @@ questions = [
     "Qancha maoshga ishlamoqchisiz?",
     "Qancha vaqt ishlamoqchisiz?",
     "Sudlanganmisiz?",
-    "Telegram username'ingizni kiriting @xxxx:",
-    "Qayerdan eshitdingiz?",
+    "Telegram username'ingizni kiriting (masalan: @ali):",
+    "Qayerdan eshitdingiz (masalan: Reklama, do‘st, internet...)?",
     "Iltimos, rasimingizni yuboring: (rasimingizni yubormasangiz ariza qabul qilinmaydi!)"
 ]
 
 variant_keyboards = {
-    3: ReplyKeyboardMarkup([["Registratura xodimi", "Hamshira (kunduzgi va navbatchilikka)"],
-                            ["Call center operator"], ["Farrosh"]], resize_keyboard=True),
+    3: ReplyKeyboardMarkup([
+        ["Registratura xodimi", "Hamshira (kunduzgi va navbatchilikka)"],
+        ["Tibbiy vakil (Мед представитель)", "Call center operator"],
+        ["Farrosh"],
+    ], resize_keyboard=True),
     5: ReplyKeyboardMarkup([["O'zbek", "Rus"], ["Boshqa millat"]], resize_keyboard=True),
     6: ReplyKeyboardMarkup([["Oliy", "O‘rta"], ["Texnikum", "O‘qiyapman"]], resize_keyboard=True),
     7: ReplyKeyboardMarkup([["Turmush qurgan", "Turmush qurmagan"]], resize_keyboard=True),
     12: ReplyKeyboardMarkup([["Ha", "Yo‘q"]], resize_keyboard=True),
     15: ReplyKeyboardMarkup([["Ha", "Yo‘q"]], resize_keyboard=True),
 }
+
+
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
